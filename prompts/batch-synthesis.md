@@ -1,4 +1,4 @@
-# Level 2 — Batch Synthesis Prompt
+# Batch Synthesis Prompt
 
 You are given 4 group memos (20 PRs total) for engineer `{{login}}`. Synthesize them into a final persona markdown following `templates/style.md`.
 

@@ -1,4 +1,4 @@
-# Level 1 — Group Analysis Prompt
+# Group Analysis Prompt
 
 You are analyzing 5 merged PRs by engineer `{{login}}`. Your goal is to write a short **code-style observation memo**. Look at the actual diff content, not PR descriptions.
 

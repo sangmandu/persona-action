@@ -1,15 +1,55 @@
-# Drop this into the caller repo at .github/workflows/persona.yml
+# ──────────────────────────────────────────────────────────────────
+# persona-action — caller workflow
+#
+# Copy this file to YOUR repo at: .github/workflows/persona.yml
+#
+# Only two things need your attention:
+#   1. Uncomment ONE `cron:` line under `schedule:` to enable auto-runs.
+#   2. Make sure `ANTHROPIC_API_KEY` exists in your repo secrets.
+#
+# Everything else can stay as-is.
+# ──────────────────────────────────────────────────────────────────
+
 name: Update Personas
 
 on:
-  schedule:
-    - cron: "0 0 * * *" # daily at 00:00 UTC
+  # ────────────────────────────────────────────────────────────────
+  # Schedule (cron). Pick ONE line below and remove the leading `# `.
+  # All times are UTC. KST = UTC + 9 hours.
+  # ────────────────────────────────────────────────────────────────
+  # schedule:
+  #   - cron: "0 0 * * *"      # daily at 00:00 UTC (09:00 KST)
+  #   - cron: "0 15 * * *"     # daily at 15:00 UTC (00:00 KST)
+  #   - cron: "0 0 * * 1"      # every Monday at 00:00 UTC (09:00 KST)
+  #   - cron: "0 0 * * 1-5"    # weekdays only, 00:00 UTC
+  #   - cron: "0 0 1 * *"      # monthly on the 1st at 00:00 UTC
+
+  # Manual trigger — always available from the Actions tab.
+  # Useful for the first-run bootstrap and one-off updates.
+  # Keep this even if you enable cron above.
   workflow_dispatch:
+
+# Required for the bot PR to be created. Do NOT remove.
+# If your org restricts workflow permissions, see:
+#   guides/09-troubleshooting.md → "GH_TOKEN errors"
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   update:
+    # Pins this workflow to the persona-action library.
+    # NOTE: `@main` tracks the latest commit. For stability, change to a
+    # specific tag (e.g. `@v0.1.0`) once one is released.
     uses: sangmandu/persona-action/.github/workflows/persona-update.yml@main
+
     with:
+      # Path to your persona config, relative to the caller repo root.
+      # Default is `.persona/config.yml` — only change if you keep it elsewhere.
       config: .persona/config.yml
+
     secrets:
+      # REQUIRED. Create this secret at:
+      #   Your repo → Settings → Secrets and variables → Actions → New secret
+      # Do NOT hardcode the key here.
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

@@ -77,7 +77,7 @@ No `start_from_pr` needed — `state.json` already has their checkpoints. If you
 
 On the next scheduled run or a manual `workflow_dispatch`:
 
-1. For alice: fetch PRs > #1234. If ≥20 new, run Level 1 → Level 2 → Level 3 (drift merge).
+1. For alice: fetch PRs > #1234. If ≥20 new, run group analysis → batch synthesis → drift merge.
 2. The drift merge prompt receives both the existing persona and the new batch persona, and extends the existing file instead of rewriting it.
 3. `persona_version` increments (3 → 4). Citations refresh to the most recent examples.
 

@@ -1,31 +1,94 @@
-# .persona/config.yml — drop this into the caller repo
+# ──────────────────────────────────────────────────────────────────
+# persona-action — config file
+#
+# Copy this file to YOUR repo at: .persona/config.yml
+#
+# Minimum you MUST edit:
+#   1. `source_repo`   — set to "owner/repo" (your repo)
+#   2. `contributors`  — list the GitHub logins you want personas for
+#
+# Everything else has sane defaults.
+# ──────────────────────────────────────────────────────────────────
+
+
+# REQUIRED. The GitHub repo to analyze, in "owner/name" form.
+# Example: "allganize/poppy"
 source_repo: owner/repo
 
-# Required. Only these contributors are analyzed.
-# Each entry can be a string (login only) or an object with optional bootstrap fields.
-contributors:
-  - simple-login-string
-  - login: someone-else
-    start_from_pr: 500 # skip history before PR #500
-  - login: latecomer
-    start_from_date: "2026-01-01" # ignore PRs merged before this date
 
-# Batch logic (defaults shown)
+# REQUIRED. Which contributors to generate personas for.
+# Only people listed here get analyzed — there is no auto-discovery.
+# This is intentional: prevents runaway cost on large teams.
+#
+# Each entry is EITHER:
+#   (a) a plain GitHub login string, OR
+#   (b) an object with `login` plus one optional bootstrap field:
+#         - `start_from_pr: <number>`    → skip everything up to and
+#                                           including this PR
+#         - `start_from_date: "YYYY-MM-DD"` → skip everything merged
+#                                             before this date
+#
+# Bootstrap fields only take effect on the VERY FIRST run for that
+# contributor. Afterward the checkpoint lives in state.json and is
+# the source of truth.
+#
+# See guides/02..04 for the three bootstrap modes explained in depth.
+contributors:
+  # Simplest form: full history. Good for small repos.
+  # See guides/02-bootstrap-from-zero.md.
+  - alice
+
+  # Skip history before a specific PR. Recommended for long-lived repos.
+  # See guides/03-bootstrap-from-pr-number.md.
+  - login: bob
+    start_from_pr: 500
+
+  # Skip history before a specific date. Good for "everything after
+  # our Q1 refactor" style cutoffs.
+  # See guides/04-bootstrap-from-date.md.
+  - login: carol
+    start_from_date: "2026-01-01"
+
+
+# OPTIONAL. How many merged PRs make up one batch.
+# Default: 20.
+# DO NOT change unless you know what you're doing — the whole pipeline
+# (5-PR groups × 4 groups per batch) is calibrated around this value.
 batch_size: 20
+
+
+# OPTIONAL. Minimum new PRs before a contributor's persona is updated.
+# Default: 20.
+# If a contributor has fewer than this many new PRs, the run silently
+# skips them until more accumulate. Lowering below ~10 produces unstable
+# personas from thin data.
 min_prs_to_update: 20
+
+
+# OPTIONAL. Hard cap on PRs processed per single run, across all batches
+# for one contributor.
+# Default: 100 (= 5 batches of 20).
+# Prevents runaway cost on the first run or after long silence.
+# Lower this (e.g. 40 or 60) if you're on a tight API budget.
+# See guides/10-cost-and-rate-limits.md.
 max_prs_per_run: 100
 
-# Output locations (relative to caller repo root)
+
+# OPTIONAL. Where generated persona files are written.
+# Default: .claude/agents — Claude Code auto-discovers sub-agents here.
+# Change only if you have a custom layout.
 output_dir: .claude/agents
+
+
+# OPTIONAL. Where the processing checkpoint is stored.
+# Default: .claude/agents/state.json — colocated with persona files so
+# they travel together in git history.
+# See guides/06-state-management.md.
 state_file: .claude/agents/state.json
 
-# Optional path filter for future extensions
-# paths:
-#   include:
-#     - "apps/**"
-#     - "libs/**"
-#   exclude:
-#     - "**/*.md"
 
-# Anthropic model used for all 3 analysis levels
+# OPTIONAL. Anthropic model used for all analysis stages.
+# Default: claude-sonnet-4-5.
+# Using a cheaper model just for group analysis is possible but requires
+# forking src/analyze.ts.
 model: claude-sonnet-4-5

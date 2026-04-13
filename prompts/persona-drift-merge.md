@@ -1,4 +1,4 @@
-# Level 3 — Drift Merge Prompt
+# Drift Merge Prompt
 
 You are given the **existing persona** for engineer `{{login}}` and a freshly synthesized **batch persona** covering the last 20 merged PRs. Merge them into an updated persona.
 

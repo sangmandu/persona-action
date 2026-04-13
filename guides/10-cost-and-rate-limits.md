@@ -6,9 +6,9 @@
 
 One contributor, one 20-PR batch:
 
-- **Level 1 (group analysis)**: 4 calls (one per 5-PR group), ~2k output tokens each, diffs in input
-- **Level 2 (batch synthesis)**: 1 call, ~8k output tokens, memos in input
-- **Level 3 (drift merge)**: 1 call, ~8k output tokens, existing persona + batch persona in input
+- **Group analysis**: 4 calls (one per 5-PR group), ~2k output tokens each, diffs in input
+- **Batch synthesis**: 1 call, ~8k output tokens, memos in input
+- **Drift merge**: 1 call, ~8k output tokens, existing persona + batch persona in input
 
 Total: **6 calls per batch**, roughly **30–60k input tokens + 20k output tokens** depending on diff size.
 
@@ -55,7 +55,7 @@ on:
 
 Tradeoff: staler personas, but cost drops 7x.
 
-**Switch model** — use a cheaper model for Level 1 (group memos) and keep Level 2/3 on Sonnet. Not supported in the default config; you'd need to fork and edit `src/analyze.ts`.
+**Switch model** — use a cheaper model for group analysis (memos) and keep batch synthesis / drift merge on Sonnet. Not supported in the default config; you'd need to fork and edit `src/analyze.ts`.
 
 ## Rate limiting
 

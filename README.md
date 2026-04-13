@@ -12,7 +12,31 @@ Generate personalized **Claude Code sub-agents** from your contributors' merged 
 
 Hard cap per run: `max_prs_per_run` (default 100). Prevents runaway cost on the first execution.
 
-## Install
+## Install — pick one of two paths
+
+### Path A — Interactive (`/install-persona`)
+
+If you use Claude Code, there's a one-shot installer skill. It asks a few questions and writes both files for you.
+
+```bash
+# 1. Clone the repo somewhere
+git clone https://github.com/sangmandu/persona-action ~/persona-action
+
+# 2. Symlink the skill into your Claude Code skills directory
+ln -s ~/persona-action/skill/install-persona ~/.claude/skills/install-persona
+```
+
+Then, inside Claude Code, from your target repo:
+
+```
+/install-persona
+```
+
+Claude will ask for the source repo, contributors, bootstrap mode, cron schedule, and preview the two files before writing them. After it finishes, commit the files and trigger the first run. You never need the repo clone again.
+
+### Path B — Manual (copy from `examples/`)
+
+No Claude Code needed. Just copy the two files and edit them.
 
 **1. Add your config** at `.persona/config.yml`:
 
