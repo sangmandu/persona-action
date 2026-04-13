@@ -36,7 +36,7 @@ function personaLogin(personaMd: string): string | null {
   if (!m || !m[1]) return null;
   const name = m[1].match(/^name:\s*(\S+)/m);
   if (!name || !name[1]) return null;
-  return name[1].replace(/-style$/, "");
+  return name[1];
 }
 
 /**

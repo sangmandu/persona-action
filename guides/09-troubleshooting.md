@@ -101,7 +101,7 @@ persona-action validate: Usage: persona-action validate <persona.md>
 The positional argument after the subcommand is required. The CLI does not prompt interactively by design. Correct call:
 
 ```bash
-bun run src/cli.ts validate .claude/agents/alice-style.md
+bun run src/cli.ts validate .claude/agents/alice.md
 ```
 
 ## Nothing happens on cron but `workflow_dispatch` works

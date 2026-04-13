@@ -56,7 +56,7 @@ The action will:
 2. For each contributor, fetch merged PRs newer than the checkpoint in `state.json` (first run = all of them).
 3. Skip anyone with fewer than 20 new PRs.
 4. Process the rest in batches of 20, up to 100 per run.
-5. Open a PR titled `[persona-bot] update personas` with the new `.claude/agents/<login>-style.md` files and an updated `state.json`.
+5. Open a PR titled `[persona-bot] update personas` with the new `.claude/agents/<login>.md` files and an updated `state.json`.
 
 ## Step 5 — Merge the PR
 

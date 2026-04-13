@@ -22,7 +22,7 @@ Persona files must match the English template layout (see [`templates/style.md`]
 Run the validator to confirm:
 
 ```bash
-bun run src/cli.ts validate .claude/agents/alice-style.md
+bun run src/cli.ts validate .claude/agents/alice.md
 ```
 
 Fix any errors listed. The validator will tell you exactly what's missing.
@@ -31,7 +31,7 @@ Fix any errors listed. The validator will tell you exactly what's missing.
 
 ```bash
 mkdir -p .claude/agents
-cp alice-style.md bob-style.md .claude/agents/
+cp alice.md bob.md .claude/agents/
 git add .claude/agents/
 git commit -m "Seed personas for persona-action"
 ```

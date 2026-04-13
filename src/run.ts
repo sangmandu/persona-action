@@ -169,12 +169,12 @@ async function processBatches(
 }
 
 function readExistingPersona(cfg: PersonaConfig, login: string): string | null {
-  const path = join(cfg.output_dir, `${login}-style.md`);
+  const path = join(cfg.output_dir, `${login}.md`);
   if (!existsSync(path)) return null;
   return readFileSync(path, "utf-8");
 }
 
 function writePersonaFile(cfg: PersonaConfig, login: string, content: string): void {
-  const path = join(cfg.output_dir, `${login}-style.md`);
+  const path = join(cfg.output_dir, `${login}.md`);
   writeFileSync(path, content);
 }

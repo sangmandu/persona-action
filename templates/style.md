@@ -1,5 +1,5 @@
 ---
-name: {{login}}-style
+name: {{login}}
 description: {{main_domain}} owner. {{core_philosophy_one_line}}
 tools: [Read, Grep, Glob, Edit, Bash]
 model: sonnet

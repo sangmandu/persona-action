@@ -54,7 +54,7 @@ Delete their entry from `state.json` and their persona file:
 ```bash
 jq 'del(.contributors["alice"])' .claude/agents/state.json > /tmp/s.json
 mv /tmp/s.json .claude/agents/state.json
-rm .claude/agents/alice-style.md
+rm .claude/agents/alice.md
 git commit -am "Reset alice persona"
 ```
 
@@ -78,7 +78,7 @@ Useful when a block of PRs is known to be noise (mass revert, vendored dump, etc
 
 ### Lost state file but personas still exist
 
-If `state.json` is missing but `.claude/agents/alice-style.md` is intact, recover by reading the persona's frontmatter:
+If `state.json` is missing but `.claude/agents/alice.md` is intact, recover by reading the persona's frontmatter:
 
 ```yaml
 ---
@@ -97,7 +97,7 @@ Add them to `config.yml`, do **not** touch `state.json`. The existing contributo
 
 ### Bulk rebuild all personas
 
-Delete `state.json` and all `.claude/agents/*-style.md`. Next run bootstraps everyone fresh. Cost warning — see [10 — Cost and Rate Limits](10-cost-and-rate-limits.md).
+Delete `state.json` and all `.claude/agents/*.md`. Next run bootstraps everyone fresh. Cost warning — see [10 — Cost and Rate Limits](10-cost-and-rate-limits.md).
 
 ## What `state.json` is NOT
 

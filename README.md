@@ -1,6 +1,6 @@
 # persona-action
 
-Generate personalized **Claude Code sub-agents** from your contributors' merged PR history. Each person gets a living `.claude/agents/<login>-style.md` file capturing their coding style — naming, control flow, type usage, error handling, test discipline, refactor appetite, review priorities. Claude Code picks them up automatically so you can route PR reviews to the right teammate persona.
+Generate personalized **Claude Code sub-agents** from your contributors' merged PR history. Each person gets a living `.claude/agents/<login>.md` file capturing their coding style — naming, control flow, type usage, error handling, test discipline, refactor appetite, review priorities. Claude Code picks them up automatically so you can route PR reviews to the right teammate persona.
 
 ## How it works
 
@@ -8,7 +8,7 @@ Generate personalized **Claude Code sub-agents** from your contributors' merged 
 2. For each contributor listed in your config, fetch new merged PRs since the last checkpoint.
 3. If at least `min_prs_to_update` (default 20) have accumulated, process them in batches of `batch_size` (default 20). Extras are held for the next run.
 4. Each batch: 5 PRs → group memo → 4 memos → batch persona → drift-merged into the existing persona.
-5. Quality-gated output is written to `.claude/agents/<login>-style.md` and a PR is opened automatically.
+5. Quality-gated output is written to `.claude/agents/<login>.md` and a PR is opened automatically.
 
 Hard cap per run: `max_prs_per_run` (default 100). Prevents runaway cost on the first execution.
 
@@ -103,7 +103,7 @@ Wire this into your own PR-opened workflow to request reviews automatically.
 
 ## Persona file structure
 
-Each `.claude/agents/<login>-style.md` has a fixed section layout:
+Each `.claude/agents/<login>.md` has a fixed section layout:
 
 | Section | Weight | Purpose |
 |---|---|---|

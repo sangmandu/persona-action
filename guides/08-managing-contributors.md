@@ -36,7 +36,7 @@ Their `state.json` entry and existing persona file are **not** touched automatic
 ```bash
 jq 'del(.contributors["bob"])' .claude/agents/state.json > /tmp/s.json
 mv /tmp/s.json .claude/agents/state.json
-rm .claude/agents/bob-style.md
+rm .claude/agents/bob.md
 git commit -am "Remove bob from persona tracking"
 ```
 
@@ -81,7 +81,7 @@ GitHub login is the unique key everywhere. If someone's login changes:
 jq --arg old oldLogin --arg new newLogin '.contributors[$new] = .contributors[$old] | del(.contributors[$old])' \
   .claude/agents/state.json > /tmp/s.json
 mv /tmp/s.json .claude/agents/state.json
-git mv .claude/agents/oldLogin-style.md .claude/agents/newLogin-style.md
+git mv .claude/agents/oldLogin.md .claude/agents/newLogin.md
 ```
 
 Also update the frontmatter `name` field inside the persona file to match.
