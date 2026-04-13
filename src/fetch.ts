@@ -59,9 +59,72 @@ export function listMergedPrs(
 }
 
 export function fetchPrDiff(repo: string, num: number, maxChars = 12000): string {
-  const raw = gh(["pr", "diff", String(num), "--repo", repo]);
+  let raw: string;
+  try {
+    raw = gh(["pr", "diff", String(num), "--repo", repo]);
+  } catch (err) {
+    // GitHub rejects .diff for PRs exceeding 20k lines or 300 files with HTTP 406.
+    // Fall back to the files API, which paginates and has no total-size cap.
+    if (!isDiffTooLargeError(err)) throw err;
+    raw = fetchPrDiffFromFilesApi(repo, num);
+  }
   if (raw.length <= maxChars) return raw;
   return raw.slice(0, maxChars) + `\n... [truncated: diff was ${raw.length} chars]`;
+}
+
+function isDiffTooLargeError(err: unknown): boolean {
+  const stderr =
+    err && typeof err === "object" && "stderr" in err
+      ? String((err as { stderr: Buffer | string }).stderr ?? "")
+      : "";
+  const msg = err instanceof Error ? err.message : String(err);
+  const haystack = `${stderr}\n${msg}`;
+  return /HTTP 406|diff exceeded|too_large/i.test(haystack);
+}
+
+interface PullFile {
+  filename: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  patch?: string | null;
+}
+
+function fetchPrDiffFromFilesApi(repo: string, num: number): string {
+  const out = gh([
+    "api",
+    `repos/${repo}/pulls/${num}/files`,
+    "--paginate",
+    "--jq",
+    ".[]",
+  ]);
+  const files: PullFile[] = out
+    .split("\n")
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line) as PullFile);
+
+  if (files.length === 0) {
+    return `[diff too large for .diff endpoint; files API returned no data for PR #${num}]`;
+  }
+
+  const parts: string[] = [
+    `[diff reconstructed from files API — ${files.length} files, original .diff exceeded GitHub size limits]`,
+  ];
+  for (const f of files) {
+    if (f.patch) {
+      parts.push(
+        `diff --git a/${f.filename} b/${f.filename}`,
+        `--- a/${f.filename}`,
+        `+++ b/${f.filename}`,
+        f.patch,
+      );
+    } else {
+      parts.push(
+        `[${f.status}] ${f.filename} (+${f.additions} -${f.deletions}) — patch omitted by GitHub`,
+      );
+    }
+  }
+  return parts.join("\n");
 }
 
 /**
