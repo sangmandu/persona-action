@@ -35,6 +35,11 @@ export class AnthropicSdkClient implements LlmClient {
 
 export class ClaudeCliClient implements LlmClient {
   async complete(opts: CompleteOpts): Promise<string> {
+    const t0 = Date.now();
+    const ts = new Date().toISOString().slice(11, 19);
+    process.stderr.write(
+      `[${ts}] llm:claude-cli start (model=${opts.model}, user=${opts.user.length}c)\n`,
+    );
     const res = spawnSync(
       "claude",
       [
@@ -48,17 +53,27 @@ export class ClaudeCliClient implements LlmClient {
         input: opts.user,
         encoding: "utf-8",
         maxBuffer: 32 * 1024 * 1024,
+        timeout: 180_000,
         env: {
           ...process.env,
           CLAUDE_CODE_NO_PROJECT_CONTEXT: "1",
         },
       },
     );
+    const dt = ((Date.now() - t0) / 1000).toFixed(1);
+    if (res.error && (res.error as NodeJS.ErrnoException).code === "ETIMEDOUT") {
+      process.stderr.write(`[${ts}] llm:claude-cli TIMEOUT after ${dt}s\n`);
+      throw new Error(`claude -p timed out after ${dt}s`);
+    }
     if (res.status !== 0) {
+      process.stderr.write(`[${ts}] llm:claude-cli FAIL exit=${res.status} dt=${dt}s\n`);
       throw new Error(
         `claude -p failed (exit ${res.status}): ${res.stderr || res.stdout}`,
       );
     }
+    process.stderr.write(
+      `[${ts}] llm:claude-cli ok ${dt}s (out=${res.stdout.length}c)\n`,
+    );
     return res.stdout.trim();
   }
 }
