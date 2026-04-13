@@ -1,0 +1,15 @@
+# Drop this into the caller repo at .github/workflows/persona.yml
+name: Update Personas
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # daily at 00:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    uses: sangmandu/persona-action/.github/workflows/persona-update.yml@main
+    with:
+      config: .persona/config.yml
+    secrets:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

@@ -1,0 +1,31 @@
+# .persona/config.yml — drop this into the caller repo
+source_repo: owner/repo
+
+# Required. Only these contributors are analyzed.
+# Each entry can be a string (login only) or an object with optional bootstrap fields.
+contributors:
+  - simple-login-string
+  - login: someone-else
+    start_from_pr: 500 # skip history before PR #500
+  - login: latecomer
+    start_from_date: "2026-01-01" # ignore PRs merged before this date
+
+# Batch logic (defaults shown)
+batch_size: 20
+min_prs_to_update: 20
+max_prs_per_run: 100
+
+# Output locations (relative to caller repo root)
+output_dir: .claude/agents
+state_file: .claude/agents/state.json
+
+# Optional path filter for future extensions
+# paths:
+#   include:
+#     - "apps/**"
+#     - "libs/**"
+#   exclude:
+#     - "**/*.md"
+
+# Anthropic model used for all 3 analysis levels
+model: claude-sonnet-4-5

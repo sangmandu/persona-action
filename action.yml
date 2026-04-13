@@ -1,0 +1,36 @@
+name: "persona-action"
+description: "Generate personalized Claude Code sub-agents from contributors' merged PR history"
+author: "sangmandu"
+branding:
+  icon: "users"
+  color: "purple"
+
+inputs:
+  config:
+    description: "Path to persona config YAML (in the caller repo)"
+    required: false
+    default: ".persona/config.yml"
+  anthropic_api_key:
+    description: "Anthropic API key"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install deps
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: bun install --frozen-lockfile || bun install
+
+    - name: Run persona pipeline
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        bun run ${{ github.action_path }}/src/cli.ts run --config ${{ inputs.config }}
