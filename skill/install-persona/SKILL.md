@@ -59,19 +59,30 @@ For each contributor, ask:
 
 Store the selected cron expression (or null for option 5).
 
-### Q5. Anthropic API key secret
+### Q5. Auth mode
 
-Check if the secret already exists: `gh secret list --app actions | grep ANTHROPIC_API_KEY`.
+Ask the user:
 
-- If present: tell the user "ANTHROPIC_API_KEY is already set — good."
+> Which auth mode do you want to use?
+>
+> 1. `ANTHROPIC_API_KEY` — direct Anthropic API, pay-per-token
+> 2. `CLAUDE_CODE_OAUTH_TOKEN` — reuses your Claude Code subscription seat
+>
+> Pick 1 or 2. (See guides/11-authentication-modes.md for the trade-offs.)
+
+Then check if the chosen secret already exists: `gh secret list --app actions | grep <SECRET_NAME>`.
+
+- If present: "✔ `<SECRET_NAME>` is already set."
 - If absent: tell the user:
-  > You need to add the `ANTHROPIC_API_KEY` secret before the workflow will run. Run this now or later:
+  > You need to add the `<SECRET_NAME>` secret before the workflow will run:
   > ```
-  > gh secret set ANTHROPIC_API_KEY
+  > gh secret set <SECRET_NAME>
   > ```
-  > (Paste your Anthropic key when prompted.)
+  > (Paste the value when prompted.)
 
-Do NOT try to set the secret yourself — let the user do it so they stay in control of their key.
+Store the chosen mode so Q6 can render the caller workflow with the correct secret mapping.
+
+Do NOT try to set the secret yourself — let the user do it so they stay in control of their credentials.
 
 ### Q6. Preview and confirm
 
@@ -119,6 +130,7 @@ Render the caller workflow with:
 - `workflow_dispatch` always present
 - `uses: sangmandu/persona-action/.github/workflows/persona-update.yml@main`
 - `config: .persona/config.yml`
+- Under `secrets:`, include ONLY the one chosen in Q5 (leave the other commented out with a note)
 
 If the user picked option 5 (manual only) in Q4, comment out the entire `schedule:` block and leave `workflow_dispatch:` as the only trigger.
 
@@ -134,7 +146,7 @@ After writing both files, print a short summary:
 >
 > Next steps:
 > 1. Commit both files and open a PR.
-> 2. Confirm `ANTHROPIC_API_KEY` is set in repo secrets (if not already).
+> 2. Confirm your chosen auth secret (`ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`) is set in repo secrets.
 > 3. Trigger the first run manually:
 >    ```
 >    gh workflow run persona.yml

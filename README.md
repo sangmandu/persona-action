@@ -67,10 +67,17 @@ jobs:
     with:
       config: .persona/config.yml
     secrets:
+      # Pick ONE of the two below.
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 ```
 
-**3. Set `ANTHROPIC_API_KEY`** in your repo secrets.
+**3. Set an auth secret** in your repo. Pick one of:
+
+- `ANTHROPIC_API_KEY` — direct Anthropic API (pay-per-token billing)
+- `CLAUDE_CODE_OAUTH_TOKEN` — reuses your Claude Code subscription seat
+
+See [`guides/11-authentication-modes.md`](guides/11-authentication-modes.md) for the trade-offs.
 
 That's it. The workflow runs daily, opens a PR if any contributor crosses the 20-PR threshold, and keeps the `state.json` checkpoint up to date.
 

@@ -17,3 +17,4 @@ Scenario-based setup and operations guides for `persona-action`.
 - [08 — Adding and Removing Contributors](08-managing-contributors.md) — changing the config after the first run
 - [09 — Troubleshooting](09-troubleshooting.md) — common failures and fixes
 - [10 — Cost and Rate Limits](10-cost-and-rate-limits.md) — controlling Anthropic API spend
+- [11 — Authentication Modes](11-authentication-modes.md) — API key vs Claude Code OAuth token

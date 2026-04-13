@@ -11,12 +11,25 @@ inputs:
     required: false
     default: ".persona/config.yml"
   anthropic_api_key:
-    description: "Anthropic API key"
-    required: true
+    description: "Anthropic API key (Mode A). Leave empty if using claude_code_oauth_token."
+    required: false
+    default: ""
+  claude_code_oauth_token:
+    description: "Claude Code OAuth token (Mode B). Leave empty if using anthropic_api_key."
+    required: false
+    default: ""
 
 runs:
   using: "composite"
   steps:
+    - name: Validate auth input
+      shell: bash
+      run: |
+        if [ -z "${{ inputs.anthropic_api_key }}" ] && [ -z "${{ inputs.claude_code_oauth_token }}" ]; then
+          echo "::error::Either anthropic_api_key or claude_code_oauth_token must be provided."
+          exit 1
+        fi
+
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
@@ -27,10 +40,16 @@ runs:
       working-directory: ${{ github.action_path }}
       run: bun install --frozen-lockfile || bun install
 
+    - name: Install Claude Code CLI (OAuth mode)
+      if: inputs.claude_code_oauth_token != ''
+      shell: bash
+      run: npm install -g @anthropic-ai/claude-code
+
     - name: Run persona pipeline
       shell: bash
       env:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        CLAUDE_CODE_OAUTH_TOKEN: ${{ inputs.claude_code_oauth_token }}
         GH_TOKEN: ${{ github.token }}
       run: |
         bun run ${{ github.action_path }}/src/cli.ts run --config ${{ inputs.config }}

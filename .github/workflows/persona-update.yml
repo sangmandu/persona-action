@@ -20,7 +20,11 @@ on:
         default: "main"
     secrets:
       ANTHROPIC_API_KEY:
-        required: true
+        description: "Anthropic API key (Mode A). Provide this OR CLAUDE_CODE_OAUTH_TOKEN."
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        description: "Claude Code OAuth token (Mode B). Provide this OR ANTHROPIC_API_KEY."
+        required: false
 
 permissions:
   contents: write
@@ -40,6 +44,7 @@ jobs:
         with:
           config: ${{ inputs.config }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6

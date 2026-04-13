@@ -5,7 +5,10 @@
 #
 # Only two things need your attention:
 #   1. Uncomment ONE `cron:` line under `schedule:` to enable auto-runs.
-#   2. Make sure `ANTHROPIC_API_KEY` exists in your repo secrets.
+#   2. Pick an auth mode and set the matching secret:
+#       Mode A — ANTHROPIC_API_KEY         (direct Anthropic API, pay-per-token)
+#       Mode B — CLAUDE_CODE_OAUTH_TOKEN   (Claude Code subscription, reuses your seat)
+#      See guides/11-authentication-modes.md for the trade-offs.
 #
 # Everything else can stay as-is.
 # ──────────────────────────────────────────────────────────────────
@@ -49,7 +52,13 @@ jobs:
       config: .persona/config.yml
 
     secrets:
-      # REQUIRED. Create this secret at:
-      #   Your repo → Settings → Secrets and variables → Actions → New secret
-      # Do NOT hardcode the key here.
+      # Provide EXACTLY ONE of the two secrets below. Leave the other commented.
+      #
+      # ── Mode A: Anthropic API key ────────────────────────────────
+      # Create at: Your repo → Settings → Secrets and variables → Actions
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #
+      # ── Mode B: Claude Code OAuth token ──────────────────────────
+      # Reuses your Claude Code subscription quota. Can be set at the
+      # organization level so multiple repos share one secret.
+      # CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
