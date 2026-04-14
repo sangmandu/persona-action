@@ -80,8 +80,8 @@ export function validatePersona(content: string): ValidationResult {
   const metaLines = metaBlock.split("\n").filter((l) => l.trim()).length;
   const totalNonBlank = body.split("\n").filter((l) => l.trim()).length;
   const metaRatio = metaLines / Math.max(1, totalNonBlank);
-  if (metaRatio > 0.05) {
-    errors.push(`Meta section too large: ${(metaRatio * 100).toFixed(1)}% (limit 5%)`);
+  if (metaRatio > 0.07) {
+    errors.push(`Meta section too large: ${(metaRatio * 100).toFixed(1)}% (limit 7%)`);
   }
 
   // 7. review routing completeness

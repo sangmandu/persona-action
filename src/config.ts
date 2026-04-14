@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from "node:fs";
+import { dirname, isAbsolute, resolve } from "node:path";
 import { parse as parseYaml } from "yaml";
 
 export interface ContributorConfig {
@@ -20,6 +21,7 @@ export interface PersonaConfig {
     exclude?: string[];
   };
   model: string;
+  concurrency: number;
 }
 
 const DEFAULTS = {
@@ -29,6 +31,7 @@ const DEFAULTS = {
   output_dir: ".claude/agents",
   state_file: ".claude/agents/state.json",
   model: "claude-sonnet-4-5",
+  concurrency: 10,
 } as const;
 
 export function loadConfig(path: string): PersonaConfig {
@@ -55,15 +58,20 @@ export function loadConfig(path: string): PersonaConfig {
     throw new Error(`Invalid contributor entry: ${JSON.stringify(c)}`);
   });
 
+  const configDir = dirname(resolve(path));
+  const resolvePath = (p: string): string =>
+    isAbsolute(p) ? p : resolve(configDir, p);
+
   return {
     source_repo,
     contributors,
     batch_size: (raw.batch_size as number) ?? DEFAULTS.batch_size,
     min_prs_to_update: (raw.min_prs_to_update as number) ?? DEFAULTS.min_prs_to_update,
     max_prs_per_run: (raw.max_prs_per_run as number) ?? DEFAULTS.max_prs_per_run,
-    output_dir: (raw.output_dir as string) ?? DEFAULTS.output_dir,
-    state_file: (raw.state_file as string) ?? DEFAULTS.state_file,
+    output_dir: resolvePath((raw.output_dir as string) ?? DEFAULTS.output_dir),
+    state_file: resolvePath((raw.state_file as string) ?? DEFAULTS.state_file),
     paths: raw.paths as PersonaConfig["paths"],
     model: (raw.model as string) ?? DEFAULTS.model,
+    concurrency: (raw.concurrency as number) ?? DEFAULTS.concurrency,
   };
 }
