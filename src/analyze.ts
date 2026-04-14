@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import type { PrSummary } from "./fetch.ts";
@@ -38,6 +38,30 @@ export interface BatchMeta {
 /**
  * Group analysis: analyze a group of ~5 PRs and return a short memo.
  */
+const GROUP_MIN_CHARS = 1500;
+const SYNTH_MIN_CHARS = 4000;
+const LLM_MAX_ATTEMPTS = 2;
+
+async function completeWithRetry(
+  label: string,
+  minChars: number,
+  call: () => Promise<string>,
+): Promise<string> {
+  let last = "";
+  for (let attempt = 1; attempt <= LLM_MAX_ATTEMPTS; attempt++) {
+    const out = await call();
+    if (out.length >= minChars) return out;
+    process.stderr.write(
+      `[retry] ${label} attempt ${attempt}/${LLM_MAX_ATTEMPTS} returned ${out.length}c (<${minChars}c)\n`,
+    );
+    last = out;
+  }
+  process.stderr.write(
+    `[retry] ${label} FAILED after ${LLM_MAX_ATTEMPTS} attempts — returning last ${last.length}c\n`,
+  );
+  return last;
+}
+
 export async function analyzeGroup(
   prs: PrSummary[],
   opts: AnalyzeOpts,
@@ -53,12 +77,15 @@ export async function analyzeGroup(
     })
     .join("\n\n");
 
-  return client().complete({
-    model: opts.model,
-    maxTokens: 2000,
-    system,
-    user: `Here are ${prs.length} merged PRs from ${opts.login}. Write the memo.\n\n${diffs}`,
-  });
+  const prNums = prs.map((p) => `#${p.number}`).join(",");
+  return completeWithRetry(`group(${prNums})`, GROUP_MIN_CHARS, () =>
+    client().complete({
+      model: opts.model,
+      maxTokens: 2000,
+      system,
+      user: `Here are ${prs.length} merged PRs from ${opts.login}. Write the memo.\n\n${diffs}`,
+    }),
+  );
 }
 
 /**
@@ -78,18 +105,49 @@ export async function synthesizeBatchPersona(
     "utf-8",
   );
 
+  const oneShot = [
+    `# ONE-SHOT INSTRUCTION — READ FIRST`,
+    ``,
+    `This is a ONE-SHOT non-interactive call. You will NOT get another turn.`,
+    `Do NOT ask for confirmation. Do NOT summarize what you will do.`,
+    `Do NOT write meta text like "Ready to proceed" or "I've synthesized".`,
+    `Do NOT use any tools. Do NOT try to write files.`,
+    `Your ENTIRE response must be the final persona markdown document itself.`,
+    `Begin your response with \`---\` (the YAML frontmatter opener) on the first line.`,
+    `End your response with the last line of the markdown document. Nothing after.`,
+    `Any text that is not part of the markdown becomes the final artifact and corrupts the pipeline.`,
+  ].join("\n");
+
   const user = [
+    oneShot,
     `# Template\n\n${template}`,
     `# Meta\n\n\`\`\`json\n${JSON.stringify(opts.meta, null, 2)}\n\`\`\``,
     `# Group memos\n\n${memos.map((m, i) => `## Group ${i + 1}\n\n${m}`).join("\n\n")}`,
+    `# FINAL REMINDER`,
+    ``,
+    `Output ONLY the markdown. Start with \`---\` now.`,
   ].join("\n\n");
 
-  return client().complete({
-    model: opts.model,
-    maxTokens: 8000,
-    system,
-    user,
-  });
+  const out = await completeWithRetry(
+    `synth(${opts.login})`,
+    SYNTH_MIN_CHARS,
+    () =>
+      client().complete({
+        model: opts.model,
+        maxTokens: 8000,
+        system,
+        user,
+      }),
+  );
+  try {
+    const dumpPath = `/tmp/persona-synthesis-${opts.login}.txt`;
+    writeFileSync(
+      dumpPath,
+      `=== user (${user.length}c) ===\n${user}\n\n=== output (${out.length}c) ===\n${out}\n`,
+    );
+    process.stderr.write(`[synth] dumped raw to ${dumpPath}\n`);
+  } catch {}
+  return out;
 }
 
 /**
